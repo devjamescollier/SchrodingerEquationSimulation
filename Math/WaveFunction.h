@@ -14,10 +14,12 @@ public:
 
   Complex EvaluateComplex(
       double x); // returns the complex value of the wave function at a point
+  void RungeKuttaStep(double dt, Function *potential);
 
 private:
   double norm_factor; // use this to make sure the integral of the pdf is 1
   std::vector<Complex> profile;
   std::vector<double> x_vals;
   double estimate_integral(); // integral of the UNORMALIZED wavefunction
+  Complex RungeKuttaRHS(int index, Function *potential, Complex k_val);
 };
