@@ -2,15 +2,6 @@
 #include "Complex.h"
 #include <cmath>
 #include <vector>
-/*
-double WaveFunction::Evaluate(double x) const {
-  // The phase angle is irrelevant here since it does not change the squared
-  // amplitude of the wave function
-  //double x_amp = norm_factor * initial_profile>Evaluate(x);
-  //return x_amp * x_amp;
-  return 0.0;
-}
-*/
 
 WaveFunction::WaveFunction(Function *initial_profile, double initial_phase,
                            std::vector<double> &x_arr)
@@ -35,41 +26,45 @@ const double WaveFunction::GetWavePDF(int index) {
 const std::vector<double> &WaveFunction::GetXVals() { return x_vals; }
 
 void WaveFunction::RungeKuttaStep(double dt, Function *potential) {
+  const int    n  = static_cast<int>(x_vals.size());
+  const double dx = x_vals[1] - x_vals[0];
 
-  std::vector<Complex> delta_psi(x_vals.size());
-  // perform Runge Kutta
-  for (int i = 0; i < x_vals.size(); i++) {
-    Complex k1 = RungeKuttaRHS(i, potential, Complex(0, 0));
-    Complex k2 = RungeKuttaRHS(i, potential, k1 * dt / 2);
-    Complex k3 = RungeKuttaRHS(i, potential, k2 * dt / 2);
-    Complex k4 = RungeKuttaRHS(i, potential, k3 * dt);
-    delta_psi[i] = (dt / 6) * (k1 + 2 * k2 + 2 * k3 + k4);
-  }
-  for (int i = 0; i < x_vals.size(); i++) {
-    profile[i] += delta_psi[i];
-  }
+  std::vector<Complex> k1(n), k2(n), k3(n), k4(n), tmp(n);
+
+  for (int i = 0; i < n; ++i)
+    k1[i] = computeRHS(i, profile, potential, dx);
+
+  for (int i = 0; i < n; ++i)
+    tmp[i] = profile[i] + k1[i] * (dt / 2.0);
+  for (int i = 0; i < n; ++i)
+    k2[i] = computeRHS(i, tmp, potential, dx);
+
+  for (int i = 0; i < n; ++i)
+    tmp[i] = profile[i] + k2[i] * (dt / 2.0);
+  for (int i = 0; i < n; ++i)
+    k3[i] = computeRHS(i, tmp, potential, dx);
+
+  for (int i = 0; i < n; ++i)
+    tmp[i] = profile[i] + k3[i] * dt;
+  for (int i = 0; i < n; ++i)
+    k4[i] = computeRHS(i, tmp, potential, dx);
+
+  for (int i = 0; i < n; ++i)
+    profile[i] += (dt / 6.0) * (k1[i] + 2.0 * k2[i] + 2.0 * k3[i] + k4[i]);
 }
 
-Complex WaveFunction::RungeKuttaRHS(int index, Function *potential,
-                                    Complex k_val) {
-
-  Complex wave_right, wave_left;
-  if (index == 0) {
-    wave_left = Complex(0, 0);
-  } else
-    wave_left = profile[index - 1];
-  if (index == x_vals.size() - 1)
-    wave_right = Complex(0, 0);
-  else
-    wave_right = profile[index + 1];
-
-  double dx = x_vals[1] - x_vals[0]; // we can do this because we assert that
-                                     // x_vals is equally spaced
+Complex WaveFunction::computeRHS(int index, const std::vector<Complex> &psi,
+                                  Function *potential, double dx) const {
+  const Complex wave_left  = (index == 0)
+                                 ? Complex(0, 0)
+                                 : psi[index - 1];
+  const Complex wave_right = (index == static_cast<int>(psi.size()) - 1)
+                                 ? Complex(0, 0)
+                                 : psi[index + 1];
 
   return Complex(0, 1) *
-         ((wave_right + wave_left - 2 * (profile[index] + k_val)) /
-              (2 * x_vals[index] * x_vals[index]) -
-          potential->Evaluate(index) * (profile[index] + k_val));
+         ((wave_right + wave_left - 2.0 * psi[index]) / (2.0 * dx * dx) -
+          potential->Evaluate(x_vals[index]) * psi[index]);
 }
 
 double WaveFunction::estimate_integral() {
