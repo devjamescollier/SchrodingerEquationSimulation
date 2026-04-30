@@ -21,5 +21,6 @@ private:
   std::vector<Complex> profile;
   std::vector<double> x_vals;
   double estimate_integral(); // integral of the UNORMALIZED wavefunction
-  Complex RungeKuttaRHS(int index, Function *potential, Complex k_val);
+  Complex computeRHS(int index, const std::vector<Complex> &psi,
+                     Function *potential, double dx) const;
 };
