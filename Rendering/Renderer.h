@@ -14,6 +14,7 @@ private:
     static int               windowHeight;
 
     static void display();
+    static void keyboard(unsigned char key, int x, int y);
     static void reshape(int w, int h);
     static void timer(int value);
 };
