@@ -79,7 +79,7 @@ double WaveFunction::estimate_integral() {
   // of the interval as the height for the rectangle
   // We assume that the wave function is zero elsewhere
   for (int i = 0; i < x_vals.size() - 1; i++) {
-    double dx = x_vals[i] - x_vals[i + 1];
+    double dx = x_vals[i + 1] - x_vals[i];
     double height = profile[i].magnitudeSquared();
     sum += height * dx;
   }
