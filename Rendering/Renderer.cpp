@@ -7,6 +7,8 @@
 #include <GL/glut.h>
 #endif
 
+#include <cstdlib>
+
 PropagationGraph* Renderer::graph        = nullptr;
 int               Renderer::windowWidth  = 900;
 int               Renderer::windowHeight = 600;
@@ -26,6 +28,7 @@ void Renderer::Init(int argc, char** argv, int width, int height, const char* ti
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 
     glutDisplayFunc(display);
+    glutKeyboardFunc(keyboard);
     glutReshapeFunc(reshape);
     glutTimerFunc(16, timer, 0);
 }
@@ -42,6 +45,12 @@ void Renderer::display() {
     glViewport(0, 0, windowWidth, windowHeight);
     if (graph) graph->Draw();
     glutSwapBuffers();
+}
+
+void Renderer::keyboard(unsigned char key, int, int) {
+    if (key == 'q' || key == 'Q') {
+        std::exit(0);
+    }
 }
 
 void Renderer::reshape(int w, int h) {
