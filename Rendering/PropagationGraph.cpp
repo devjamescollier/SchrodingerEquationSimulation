@@ -8,6 +8,7 @@
 #endif
 
 #include <cmath>
+#include <limits>
 #include <sstream>
 #include <iomanip>
 #include <string>
@@ -73,6 +74,7 @@ void PropagationGraph::Draw() const {
     glClear(GL_COLOR_BUFFER_BIT);
 
     drawFilledCurve(xMin, xMax, yMax);
+    drawPotential(xMin, xMax, yMax);
     drawAxes(xMin, xMax, yMax);
 }
 
@@ -119,6 +121,41 @@ void PropagationGraph::drawFilledCurve(double xMin, double xMax, double yMax) co
     }
     glEnd();
     glLineWidth(1.0f);
+}
+
+void PropagationGraph::drawPotential(double xMin, double xMax, double yMax) const {
+    if (!potential) return;
+    const std::vector<double>& xVals = waveFunction->GetXVals();
+    const int n = static_cast<int>(xVals.size());
+
+    double vMin = std::numeric_limits<double>::max();
+    double vMax = std::numeric_limits<double>::lowest();
+    for (int i = 0; i < n; ++i) {
+        const double v = potential->Evaluate(xVals[i]);
+        if (std::isfinite(v)) {
+            if (v < vMin) vMin = v;
+            if (v > vMax) vMax = v;
+        }
+    }
+    const double vRange = vMax - vMin;
+    if (vRange < 1e-12) return; // constant potential — nothing useful to show
+
+    const double displayHeight = 0.28 * yMax;
+    const double xRange        = xMax - xMin;
+
+    glColor4f(1.0f, 0.55f, 0.0f, 0.85f);
+    glLineWidth(1.5f);
+    glBegin(GL_LINE_STRIP);
+    for (int i = 0; i < n; ++i) {
+        const double v = potential->Evaluate(xVals[i]);
+        if (!std::isfinite(v)) continue;
+        glVertex2d(xVals[i], (v - vMin) / vRange * displayHeight);
+    }
+    glEnd();
+    glLineWidth(1.0f);
+
+    drawText(xMin - xRange * 0.19, displayHeight * 0.5, "V(x)");
+    glColor3f(1.0f, 1.0f, 1.0f);
 }
 
 void PropagationGraph::drawAxes(double xMin, double xMax, double yMax) const {
