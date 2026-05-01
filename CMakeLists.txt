@@ -9,8 +9,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_executable(SchrodingerSim
     main.cpp
     Math/Complex.cpp
+    Math/ComposedFunction.cpp
     Math/ConstantFunction.cpp
     Math/CosFunction.cpp
+    Math/EquationSymbols.cpp
     Math/PolynomialFunction.cpp
     Math/SineFunction.cpp
     Math/WaveFunction.cpp
