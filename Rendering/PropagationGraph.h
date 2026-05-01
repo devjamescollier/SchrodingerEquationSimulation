@@ -18,6 +18,7 @@ private:
     double        time;
 
     void drawFilledCurve(double xMin, double xMax, double yMax) const;
+    void drawPotential(double xMin, double xMax, double yMax) const;
     void drawAxes(double xMin, double xMax, double yMax) const;
     void drawText(double x, double y, const char* text) const;
 
