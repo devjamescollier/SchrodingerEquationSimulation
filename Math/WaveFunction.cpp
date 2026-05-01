@@ -25,6 +25,18 @@ const double WaveFunction::GetWavePDF(int index) {
 
 const std::vector<double> &WaveFunction::GetXVals() { return x_vals; }
 
+Complex WaveFunction::EvaluateComplex(double x) {
+  if (x_vals.size() < 2) return Complex(0.0, 0.0);
+  const double dx   = x_vals[1] - x_vals[0];
+  const double t    = (x - x_vals.front()) / dx;
+  const int    i    = static_cast<int>(std::floor(t));
+  const int    n    = static_cast<int>(x_vals.size());
+  if (i < 0 || i >= n - 1) return Complex(0.0, 0.0);
+  const double frac = t - i;
+  const Complex val = profile[i] * (1.0 - frac) + profile[i + 1] * frac;
+  return val * std::sqrt(norm_factor);
+}
+
 void WaveFunction::RungeKuttaStep(double dt, Function *potential) {
   const int    n  = static_cast<int>(x_vals.size());
   const double dx = x_vals[1] - x_vals[0];
